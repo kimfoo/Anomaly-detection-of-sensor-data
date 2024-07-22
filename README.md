@@ -1,94 +1,37 @@
-# Isolation Forest Anomaly Detection
+# Anomaly Detection of Sensor Data
 
-## Overview
-This project implements anomaly detection using the Isolation Forest algorithm. It identifies outliers in a dataset that represent anomalies. The model is tuned using hyperparameter optimization to achieve the best F1 score.
+## Introduction
+In the industrial manufacturing field, machines and equipment are essential to modern business, which are expected to operate at peak performance for extended periods. However, when the equipment experiences failure, it needs to be replaced, which often results in higher costs and waste of resources due to downtime and labor. Preventive maintenance can offer a sustainable solution by preventing unexpected problems through continuous monitoring and prediction of equipment data or sensor data, allowing for timely interventions.
 
-## Features
-- Anomaly detection using Isolation Forest
-- Hyperparameter tuning with GridSearchCV
-- Evaluation metrics: Precision, Recall, and F1-score
+## Problem Statement
+In the semiconductor industry, a wafer goes through fabrication process that involves various tools, and a recipe defines how the wafer is processed by a tool. A wafer lot is a batch of multiple wafers that belong to the same technology and product.The sensor values of a tool are recorded for each wafer run, and this data is important for engineers to determine if the tool is working properly or not. Therefore, an FDC (fault detection and classification) system is necessary to detect any tool sensor anomalies to prevent further wafer scraps. 
 
-## Installation
+## Aims and Objectives
+This project focuses on building a anomaly detection model to detect wafer runs that are anomalous. The dataset does not contain labelled data (anomalous/non-anomalous), therefore an unsupervised learning method is utilised. Python and the Sci-kitLearn machine learning libraries are the primary tools used in this project. The objective of this project is to understand the characteristics of the data using Exploratory Data Analysis, and then carry out the following to build a data science/machine learning pipeline to perform the anomaly detection:
 
-### Prerequisites
-- Python 3.6+
-- Pandas
-- Scikit-learn
+1.	Data preprocessing
+2.	Feature engineering
+3.	Feature selection
+4.	Hyperparameter tuning
+5.	Model training
+6.	Model prediction
+7.	Anomaly detection
 
-### Setup
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/your-repo-name.git
-    cd your-repo-name
-    ```
+## Solution Approach
+The Isolation Forest algorithm is used to train the anomaly detection model. To validate the model's performance, the K-fold cross-validation is used to evaluate the performance of a model by splitting the data into multiple subsets, training the model on some subsets, and testing it on the remaining subsets. This process helps to ensure that the model's performance is robust and not dependent on any specific subset of the data. StratifiedKFold is used to ensure each fold has a similar distribution of anomalies and normal runs.
 
-2. Create a virtual environment and activate it:
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
+For further analysis, Principal Component Analysis (PCA) was used to reduce the dimensionality of the dataset, so that the anomalous and non-anomalous data can be visualised more clearly. As the dataset consist of categorical and numerical features, One Hot Encoding was executed for the categorical features and combined with the numerical features so that the Isolation Forest can be applied. The Isolation Forest algorithm is also applied to solely numerical features to compare the results between combined features vs only numerical features. The contamination parameter within the Isolation Forest algorithm was also tuned to obtain better model performance.
 
-3. Install the required packages:
-    ```bash
-    pip install -r requirements.txt
-    ```
+## Model Performance and Evaluation Metrics
+The graphs depicting the model's performance can be visualised within the Jupyter Notebook files, which also provides the interpretation of the results. The below metrics were used to evaluate the model's performance, along with the visual inspection on the clusters formed by the anomalous and non-anomalous data. A greater separation between both clusters indicates the model's ability to differentiate between anomalous and non-anomalous data. 
 
-## Usage
-
-### Data Preparation
-Ensure your dataset is in CSV format with a column named `Anomaly` indicating anomalies (-1 for anomaly, 1 for normal).
-
-### Running the Model
-1. Load your dataset:
-    ```python
-    import pandas as pd
-
-    encoded_data = pd.read_csv('path_to_your_encoded_data.csv')
-    ```
-
-2. Perform hyperparameter tuning and anomaly detection:
-    ```python
-    from sklearn.ensemble import IsolationForest
-    from sklearn.model_selection import GridSearchCV
-    from sklearn.metrics import make_scorer, f1_score
-
-    # Prepare the data
-    feature_names = encoded_data.drop(columns=['Anomaly']).columns
-    features = encoded_data[feature_names]
-    labels = encoded_data['Anomaly']
-
-    # Define the parameter grid
-    param_grid = {
-        'n_estimators': [50, 100, 150],
-        'max_samples': ['auto', 0.5, 0.75],
-        'contamination': [0.01, 0.03, 0.05, 0.1],
-        'max_features': [1.0, 0.8, 0.5],
-        'bootstrap': [True, False],
-    }
-
-    # Custom scorer using F1 score
-    f1_scorer = make_scorer(f1_score, pos_label=-1)
-
-    # Initialize and fit GridSearchCV
-    iso_forest = IsolationForest(random_state=42)
-    grid_search = GridSearchCV(estimator=iso_forest, param_grid=param_grid, scoring=f1_scorer, cv=5, n_jobs=-1, verbose=2)
-    grid_search.fit(features, labels)
-
-    # Get the best parameters and score
-    best_params = grid_search.best_params_
-    best_score = grid_search.best_score_
-
-    print("Best Parameters:", best_params)
-    print("Best F1 Score:", best_score)
-    ```
-
-## Evaluation Metrics
 - **Precision**: The ratio of correctly predicted positive observations to the total predicted positives.
 - **Recall**: The ratio of correctly predicted positive observations to all observations in the actual class.
 - **F1-Score**: The harmonic mean of precision and recall.
 
-## Example Output
-An example of the output after running the model:
-```bash
-Best Parameters: {'bootstrap': False, 'contamination': 0.05, 'max_features': 0.8, 'max_samples': 'auto', 'n_estimators': 100}
-Best F1 Score: 0.75
+## Key Findings
+The anomaly detection models were able to achieve an F1-score of at least 75%. The F1-score is improved upon further hyperparameter tuning and feature selection to achieve a score of above 95%. The overlapping of anomalous and non-anomalous data was also greatly reduced, indicating that the model can potentially predict anomalous wafer runs to an acceptable degree.
+
+## Further Findings and Improvements
+As there is no labelled data on which runs are anomalous and non-anomalous, the results from this model prediction need to be further validated by performing a more in-depth analysis into the specific conditions (such as the MachineRecipe and Technology) to investigate the influence of these features on the results. The outliers should also be investigated to understand why these points stand out. As the fluctuation in sensor readings is quite high, it is difficult to tell if a run is anomalous using visual inspection. Furthermore, different sensors exhibit a different run pattern. Thus, rolling statistics can be used to calculate the rolling mean, variance and other statistics to understand the trends and anomalies in the run. Collaboration with domain experts may also help to deliver new insights into the run pattern to identify the anomalous sensor data. 
+
